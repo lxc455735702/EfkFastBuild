@@ -85,5 +85,5 @@ kibana-logging-cbc788775-zjc28   1/1     Running   0          3h25m
 
 访问 http://kibana.wyyy.com/ 即可打开kibana
 
-
+博客地址：https://blog.csdn.net/github_38787615/article/details/106639641
 
