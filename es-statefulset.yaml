@@ -120,7 +120,6 @@ spec:
         volume.beta.kubernetes.io/storage-class: course-nfs-storage
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: rook-ceph-block
       resources:
         requests:
           storage: 1Gi
