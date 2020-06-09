@@ -8,7 +8,7 @@
 # kubernetes efk deploy
 1. elasticsearch
 ```
-$ create -f es-statefulset.yaml -n logging
+$ kubectl create -f es-statefulset.yaml -n logging
 $ kubectl create -f es-service.yaml -n logging
 
 $ kubectl get pods -n logging
