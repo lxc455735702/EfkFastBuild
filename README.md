@@ -1,3 +1,10 @@
+<!--
+ * @Description: 
+ * @Author: lxc
+ * @Date: 2020-06-09 09:17:51
+ * @LastEditTime: 2020-06-09 16:11:10
+ * @LastEditors: lxc
+--> 
 # kubernetes efk deploy
 1. elasticsearch
 ```
@@ -18,6 +25,7 @@ elasticsearch-logging   ClusterIP   10.108.178.226   <none>        9200/TCP   3h
 ```
 $ kubectl create -f kibana.yaml -n logging
 $ kubectl create -f kibana-service.yaml -n logging
+$ kubectl create -f kibana-ingress.yaml -n logging
 
 $ kubectl get pods -n logging
 NAME                             READY   STATUS    RESTARTS   AGE
