@@ -2,7 +2,7 @@ kind: Ingress
 apiVersion: extensions/v1beta1
 metadata:
   name: kibana-dashboard
-  namespace: kube-system
+  namespace: logging
 spec:
   rules:
   - host: kibana.wyyy.com
