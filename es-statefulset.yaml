@@ -1,118 +1,65 @@
-# RBAC authn and authz
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: elasticsearch-logging
-  namespace: logging
-  labels:
-    k8s-app: elasticsearch-logging
-    addonmanager.kubernetes.io/mode: Reconcile
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: elasticsearch-logging
-  labels:
-    k8s-app: elasticsearch-logging
-    addonmanager.kubernetes.io/mode: Reconcile
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - "services"
-  - "namespaces"
-  - "endpoints"
-  verbs:
-  - "get"
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  namespace: logging
-  name: elasticsearch-logging
-  labels:
-    k8s-app: elasticsearch-logging
-    addonmanager.kubernetes.io/mode: Reconcile
-subjects:
-- kind: ServiceAccount
-  name: elasticsearch-logging
-  namespace: logging
-  apiGroup: ""
-roleRef:
-  kind: ClusterRole
-  name: elasticsearch-logging
-  apiGroup: ""
----
-# Elasticsearch deployment itself
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: elasticsearch-logging
+  name: es
   namespace: logging
-  labels:
-    k8s-app: elasticsearch-logging
-    version: v6.5.4
-    addonmanager.kubernetes.io/mode: Reconcile
 spec:
-  serviceName: elasticsearch-logging
-  replicas: 2
+  serviceName: elasticsearch
+  replicas: 3
   selector:
     matchLabels:
-      k8s-app: elasticsearch-logging
-      version: v6.5.4
+      app: elasticsearch
   template:
     metadata:
-      labels:
-        k8s-app: elasticsearch-logging
-        version: v6.5.4
+      labels: 
+        app: elasticsearch
     spec:
-      serviceAccountName: elasticsearch-logging
-      containers:
-      - image: elasticsearch:6.5.4
-        name: elasticsearch-logging
-        imagePullPolicy: Always
-        resources:
-          # need more cpu upon initialization, therefore burstable class
-          limits:
-            cpu: 1000m
-            memory: 3Gi
-          requests:
-            cpu: 100m
-            memory: 3Gi
-        ports:
-        - containerPort: 9200
-          name: db
-          protocol: TCP
-        - containerPort: 9300
-          name: transport
-          protocol: TCP
-        livenessProbe:
-          tcpSocket:
-            port: transport
-          initialDelaySeconds: 5
-          timeoutSeconds: 10
-        readinessProbe:
-          tcpSocket:
-            port: transport
-          initialDelaySeconds: 5
-          timeoutSeconds: 10
-        volumeMounts:
-        - name: elasticsearch-logging
-          mountPath: /usr/share/elasticsearch/logging
-        env:
-        - name: "NAMESPACE"
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-      # Elasticsearch requires vm.max_map_count to be at least 262144.
-      # If your OS already sets up this number to a higher value, feel free
-      # to remove this init container.
+      nodeSelector:
+        es: log
       initContainers:
-      - image: alpine:3.6
-        command: ["/sbin/sysctl", "-w", "vm.max_map_count=262144"]
-        name: elasticsearch-logging-init
+      - name: increase-vm-max-map
+        image: busybox
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
         securityContext:
           privileged: true
+      - name: increase-fd-ulimit
+        image: busybox
+        command: ["sh", "-c", "ulimit -n 65536"]
+        securityContext:
+          privileged: true
+      containers:
+      - name: elasticsearch
+        image: elasticsearch:7.6.2
+        ports:
+        - name: rest
+          containerPort: 9200
+        - name: inter
+          containerPort: 9300
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 1000m
+        volumeMounts:
+        - name: elasticsearch-logging
+          mountPath: /usr/share/elasticsearch/data
+        env:
+        - name: cluster.name
+          value: k8s-logs
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: cluster.initial_master_nodes
+          value: "es-0,es-1,es-2"
+        - name: discovery.zen.minimum_master_nodes
+          value: "2"
+        - name: discovery.seed_hosts
+          value: "elasticsearch"
+        - name: ES_JAVA_OPTS
+          value: "-Xms512m -Xmx512m"
+        - name: network.host
+          value: "0.0.0.0"
   volumeClaimTemplates:
   - metadata:
       name: elasticsearch-logging
@@ -122,4 +69,4 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: 1Gi      

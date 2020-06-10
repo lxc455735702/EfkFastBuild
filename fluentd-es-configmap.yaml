@@ -473,7 +473,7 @@ data:
       @type elasticsearch
       @log_level info
       include_tag_key true
-      host elasticsearch-logging
+      host elasticsearch
       port 9200
       logstash_format true
       logstash_prefix k8s  # 设置 index 前缀为 k8s
