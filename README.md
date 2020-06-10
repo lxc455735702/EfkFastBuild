@@ -88,5 +88,6 @@ kibana-7fc6d9dcbf-9twkd   1/1     Running   0          5h26m
 
 访问 10.104.61.249:32355 即可打开kibana
 
+如果对于搭建 efk 有所帮助，欢迎Star，谢谢。
 
 
