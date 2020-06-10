@@ -2,41 +2,44 @@
  * @Description: 
  * @Author: lxc
  * @Date: 2020-06-09 09:17:51
- * @LastEditTime: 2020-06-09 16:11:10
+ * @LastEditTime: 2020-06-10 18:18:01
  * @LastEditors: lxc
 --> 
 # kubernetes efk deploy
 1. elasticsearch
 ```
 $ kubectl create -f es-statefulset.yaml -n logging
-$ kubectl create -f es-service.yaml -n logging
+$ kubectl create -f es-svc.yaml -n logging
 
 $ kubectl get pods -n logging
-NAME                             READY   STATUS    RESTARTS   AGE
-elasticsearch-logging-0          1/1     Running   0          3h26m
-elasticsearch-logging-1          1/1     Running   0          3h25m
+NAME                      READY   STATUS    RESTARTS   AGE
+es-0                      1/1     Running   0          6h9m
+es-1                      1/1     Running   0          6h9m
+es-2                      1/1     Running   0          6h8m
+
+ps node label
 
 $ kubectl get svc -n logging
-NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-elasticsearch-logging   ClusterIP   10.108.178.226   <none>        9200/TCP   3h22m
+NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+elasticsearch   ClusterIP   None            <none>        9200/TCP,9300/TCP   6h17m
+
 
 ```
 2. kibana
 ```
 $ kubectl create -f kibana.yaml -n logging
-$ kubectl create -f kibana-service.yaml -n logging
-$ kubectl create -f kibana-ingress.yaml -n logging
 
 $ kubectl get pods -n logging
-NAME                             READY   STATUS    RESTARTS   AGE
-elasticsearch-logging-0          1/1     Running   0          3h30m
-elasticsearch-logging-1          1/1     Running   0          3h29m
-kibana-logging-cbc788775-zjc28   1/1     Running   0          3h25m
+NAME                      READY   STATUS    RESTARTS   AGE
+es-0                      1/1     Running   0          6h9m
+es-1                      1/1     Running   0          6h9m
+es-2                      1/1     Running   0          6h8m
+kibana-7fc6d9dcbf-9twkd   1/1     Running   0          5h22m
 
 $ kubectl get svc -n logging
 NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-elasticsearch-logging   ClusterIP   10.108.178.226   <none>        9200/TCP   3h27m
-kibana-logging          ClusterIP   10.98.53.208     <none>        5601/TCP   3h26m
+elasticsearch   ClusterIP   None            <none>        9200/TCP,9300/TCP   6h9m
+kibana          NodePort    10.108.169.43   <none>        5601:32355/TCP      5h14m
 ```
 
 3. fluentd
@@ -70,20 +73,20 @@ Docker Root Dir: /home/docker/data
 $ kubectl create -f fluentd-es-configmap.yaml -n logging
 $ kubectl create -f fluentd-es-ds.yaml -n logging
 $ kubectl get pods -n logging
+NAME                      READY   STATUS    RESTARTS   AGE
+es-0                      1/1     Running   0          6h14m
+es-1                      1/1     Running   0          6h13m
+es-2                      1/1     Running   0          6h13m
+fluentd-es-v2.3.2-64phl   1/1     Running   0          5h18m
+fluentd-es-v2.3.2-fqtpf   1/1     Running   0          5h18m
+fluentd-es-v2.3.2-gjk72   1/1     Running   0          5h18m
+fluentd-es-v2.3.2-m8bv5   1/1     Running   0          5h18m
+fluentd-es-v2.3.2-rb6z6   1/1     Running   0          5h18m
+kibana-7fc6d9dcbf-9twkd   1/1     Running   0          5h26m
 
-NAME                             READY   STATUS    RESTARTS   AGE
-elasticsearch-logging-0          1/1     Running   0          3h30m
-elasticsearch-logging-1          1/1     Running   0          3h29m
-fluentd-es-v2.3.2-2z8n2          1/1     Running   0          3h14m
-fluentd-es-v2.3.2-p2j9v          1/1     Running   0          3h14m
-fluentd-es-v2.3.2-vqbnz          1/1     Running   0          3h14m
-fluentd-es-v2.3.2-xglhj          1/1     Running   0          3h14m
-kibana-logging-cbc788775-zjc28   1/1     Running   0          3h25m
 ```
-修改pc hosts 添加 
-10.104.61.251 kibana.wyyy.com
 
-访问 http://kibana.wyyy.com/ 即可打开kibana
+访问 10.104.61.249:32355 即可打开kibana
 
-博客地址：https://blog.csdn.net/github_38787615/article/details/106639641
+
 
